@@ -31,7 +31,7 @@ router.get('/admin/:adminId', async (req, res) => {
 
 // POST /api/events
 router.post('/', authMiddleware, async (req, res) => {
-  const { name, date, description, location, tags } = req.body;
+  const { name, date, description, location,locationName, registrationLink, tags } = req.body;
 
   try {
     const newEvent = new Event({
@@ -39,6 +39,8 @@ router.post('/', authMiddleware, async (req, res) => {
       date,
       description,
       location,
+      locationName,         // ✅ Required field
+      registrationLink,     // ✅ Optional, but include if supported
       tags,
     });
 
@@ -46,19 +48,20 @@ router.post('/', authMiddleware, async (req, res) => {
 
     // Find users with matching tags
     const matchingUsers = await User.find({
-      tags: { $in: tags }
+      tags: { $in: tags },
+      _id: { $ne: req.user._id }, // ✅ Exclude the organizer
     });
-
+     res.status(201).json(newEvent);
     // Send email notifications
     for (const user of matchingUsers) {
       try {
-        await sendRegistrationEmail(user.email, user.name, newEvent.name); // You can customize this to include event info
+        await sendRegistrationEmail(user.email, user.name, newEvent); // You can customize this to include event info
       } catch (err) {
         console.error(`Failed to send email to ${user.email}:`, err);
       }
     }
 
-    res.status(201).json(newEvent);
+    
   } catch (err) {
     console.error('Error creating event:', err);
     res.status(500).json({ message: 'Failed to create event' });
@@ -69,7 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const events = await Event.find();
-     console.log('Fetched events:', events); // ← check this output
+    // console.log('Fetched events:', events); // ← check this output
     res.json(events);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching events' });
@@ -115,20 +118,21 @@ router.post('/:id/notify', authMiddleware, async (req, res) => {
     }
 
     const matchingUsers = await User.find({
-      tags: { $in: event.tags }
+      tags: { $in: event.tags },
+      _id: { $ne: req.user._id }, // ✅ Exclude the organizer
     });
 
     for (const user of matchingUsers) {
       try {
-        await sendRegistrationEmail(user.email, user.name, event.name); // You can modify to include more info
+        await sendRegistrationEmail(user.email, user.name, event, 'manual');
       } catch (err) {
-        console.error(`Failed to send email to ${user.email}:`, err);
+        console.error(`Failed to send email to ${user.email}:`, err.message);
       }
     }
 
     res.status(200).json({ message: 'Notifications sent successfully' });
   } catch (err) {
-    console.error('Error in /notify route:', err);
+    console.error('Error in /notify route:', err.message);
     res.status(500).json({ message: 'Failed to send notifications' });
   }
 });

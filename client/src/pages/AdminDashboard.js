@@ -12,8 +12,10 @@ const AdminDashboard = () => {
     name: '',
     date: '',
     description: '',
-    location: '',
+    location: { lat: '', lng: '' },
+    locationName: '',
     tags: [],
+    registrationLink: ''
   });
   const [message, setMessage] = useState('');
   const { id } = useParams(); // Get event id if available
@@ -49,6 +51,8 @@ const AdminDashboard = () => {
          setEventData({
            ...event,
            date: formattedDate,
+           location: event.location || { lat: '', lng: '' },
+           locationName: event.locationName || '',
          });
         })
       .catch(err => {
@@ -97,7 +101,16 @@ const AdminDashboard = () => {
         });
         setMessage('Event created successfully!');
       }
-      setEventData({ name: '', date: '', description: '', location: '', tags: [] });
+      setEventData({
+       name: '',
+       date: '',
+       description: '',
+       location: { lat: '', lng: '' },
+       locationName: '',
+       tags: [],
+       registrationLink: ''
+      });
+
       fetchEvents();
       history.push('/admin-dashboard');
     } catch (err) {
@@ -160,6 +173,7 @@ const handleNotify = async (eventId) => {
       <EventForm
         eventData={eventData}
         handleChange={handleChange}
+        setEventData={setEventData} // ✅ Add this
         handleSubmit={handleSubmit}
         isEdit={!!id}
       />

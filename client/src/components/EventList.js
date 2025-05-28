@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './EventList.css';
 
-const EventList = ({ events, onEdit, onDelete,onNotify, showActions = false }) => {
+const EventList = ({ events, onEdit, onDelete, onNotify, showActions = false, showRegister = false }) => {
   if (!events) return <div>Loading events...</div>;
 
   return (
@@ -20,36 +19,40 @@ const EventList = ({ events, onEdit, onDelete,onNotify, showActions = false }) =
                 <h3>{event.name}</h3>
               </Link>
               <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-              <p><strong>Location:</strong> {event.location}</p>
+              <p>
+                <strong>Location:</strong>{' '}
+                {event.location?.lat && event.location?.lng ? (
+                <a
+                  href={`https://www.google.com/maps?q=${event.location.lat},${event.location.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="location-link"
+                >
+                {event.locationName || `${event.location.lat}, ${event.location.lng}`}
+                </a>
+                ) : (
+                  event.locationName || 'No location set'
+                )}
+              </p>
               <p><strong>Description:</strong> {event.description}</p>
               <p><strong>Tags:</strong> {event.tags?.join(', ')}</p>
 
-              {/* ✅ Only show buttons if showActions is true */}
+              {showRegister && event.registrationLink && (
+                <a
+                  href={event.registrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="register-button"
+                >
+                  Register
+                </a>
+              )}
+
               {showActions && (
                 <>
-                  <button
-                    onClick={() => onEdit(event._id)}
-                    className="edit-button"
-                    style={{ marginTop: '10px' }}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => onDelete(event._id)}
-                    className="delete-btn"
-                    style={{ marginTop: '10px' }}
-                  >
-                    Delete
-                  </button>
-                  {/* ✅ Send Notifications Button */}
-                   <button
-                      onClick={() => onNotify(event._id)}
-                      className="notify-button"
-                      style={{ marginTop: '10px', backgroundColor: '#4caf50', color: 'white' }}
-                    >
-                     Send Notifications
-                  </button>
+                  <button onClick={() => onEdit(event._id)} className="edit-button">Edit</button>
+                  <button onClick={() => onDelete(event._id)} className="delete-btn">Delete</button>
+                  <button onClick={() => onNotify(event._id)} className="notify-button">Send Notifications</button>
                 </>
               )}
             </li>
@@ -61,5 +64,3 @@ const EventList = ({ events, onEdit, onDelete,onNotify, showActions = false }) =
 };
 
 export default EventList;
-
-

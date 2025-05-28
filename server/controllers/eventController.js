@@ -3,7 +3,7 @@ const Event = require('../models/Event');
 
 exports.createEvent = async (req, res) => {
   try {
-    const { name, date, description, location, tags } = req.body;
+   const { name, date, description, location, locationName, registrationLink, tags } = req.body;
 
     // Check if user exists, otherwise assign null to createdBy
     const createdBy = req.user ? req.user.id : null;
@@ -13,14 +13,20 @@ exports.createEvent = async (req, res) => {
       date,
       description,
       location,
+      locationName,       // NEW
+      registrationLink,   // NEW
       tags,
       createdBy, // If user is not authenticated, set as null
     });
 
     await event.save();
+ // Find users whose tags match event.tags
+    const interestedUsers = await User.find({ tags: { $in: tags } });
 
-    // 🔔 Send notifications to matching users (if you have this functionality)
-    sendPersonalizedEmails(event);
+    // Send notifications to those users
+    interestedUsers.forEach(user => {
+      sendEventNotificationEmail(user.email, user.name, event).catch(console.error);
+    });
 
     res.status(201).json(event);
   } catch (err) {

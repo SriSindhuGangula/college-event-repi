@@ -35,7 +35,7 @@ const UserDashboard = () => {
     <div className="user-dashboard">
       <h2>User Dashboard</h2>
       {message && <p className="message">{message}</p>}
-      <EventList events={events} showActions={false} />
+      <EventList events={events} showActions={false} showRegister={true} />
     </div>
   );
 };
