@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import EventList from '../components/EventList'; // Adjust path if needed
+import EventList from '../components/EventList'; 
 import './UserDashboard.css';
 
 const UserDashboard = () => {
@@ -33,7 +33,7 @@ const UserDashboard = () => {
 
   return (
     <div className="user-dashboard">
-      <h2>User Dashboard</h2>
+      <h2>Welcome to User Dashboard</h2>
       {message && <p className="message">{message}</p>}
       <EventList events={events} showActions={false} showRegister={true} />
     </div>
